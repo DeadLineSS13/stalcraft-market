@@ -1,0 +1,4 @@
+[submodule "stalcraft-database"]
+	path = MarketBot/StalcraftMarketDiscordBot/stalcraftdatabase
+	url = https://github.com/EXBO-Studio/stalcraft-database.git
+	branch = main

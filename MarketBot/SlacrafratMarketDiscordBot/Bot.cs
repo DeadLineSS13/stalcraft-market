@@ -4,12 +4,14 @@ using DSharpPlus.CommandsNext;
 using Newtonsoft.Json;
 using Microsoft.Extensions.Logging;
 using SlacrafratMarketDiscordBot.Commands;
+using System.Net.Http;
 
 namespace SlacrafratMarketDiscordBot
 {
     internal class Bot
     {
-        public DiscordClient? Client { get; private set; }
+        public DiscordClient? DClient { get; private set; }
+        public HttpClient? HClient { get; private set; }
         public CommandsNextExtension? Commands { get; private set; }
         public async Task RunAsync()
         {
@@ -24,9 +26,10 @@ namespace SlacrafratMarketDiscordBot
                 
             };
 
-            Client = new DiscordClient(config);
+            DClient = new DiscordClient(config);
+            HClient = new HttpClient();
 
-            Client.Ready += OnClientReady;
+            DClient.Ready += OnClientReady;
 
             var commandsConfig = new CommandsNextConfiguration
             {
@@ -37,11 +40,11 @@ namespace SlacrafratMarketDiscordBot
 
             };
 
-            Commands = Client.UseCommandsNext(commandsConfig);
+            Commands = DClient.UseCommandsNext(commandsConfig);
 
             Commands.RegisterCommands<Market>();
 
-            await Client.ConnectAsync();
+            await DClient.ConnectAsync();
 
             await Task.Delay(-1);
         }
