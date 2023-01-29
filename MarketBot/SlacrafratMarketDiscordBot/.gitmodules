@@ -1,4 +1,0 @@
-[submodule "stalcraft-database"]
-	path = stalcraftdatabase
-	url = https://github.com/EXBO-Studio/stalcraft-database.git
-	branch = main
