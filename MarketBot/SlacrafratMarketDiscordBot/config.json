@@ -1,6 +1,6 @@
 {
-  "token": "",
+  "token": "DISCORD_TOKEN",
   "prefix": "?",
-  "client_id": "",
-  "client_secret": ""
+  "client_id": "API_ID",
+  "client_secret": "API_SECRET"
 }
