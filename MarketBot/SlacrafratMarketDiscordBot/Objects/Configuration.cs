@@ -5,12 +5,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SlacrafratMarketDiscordBot
+namespace SlacrafratMarketDiscordBot.Objects
 {
     public struct Configuration
     {
         [JsonProperty("token")]
         public string Token { get; set; }
+
         [JsonProperty("prefix")]
         public string Prefix { get; set; }
     }

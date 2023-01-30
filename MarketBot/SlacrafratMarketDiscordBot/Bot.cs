@@ -5,6 +5,9 @@ using Newtonsoft.Json;
 using Microsoft.Extensions.Logging;
 using SlacrafratMarketDiscordBot.Commands;
 using System.Net.Http;
+using SlacrafratMarketDiscordBot.Objects;
+using System.Reflection;
+using DSharpPlus.SlashCommands;
 
 namespace SlacrafratMarketDiscordBot
 {
@@ -13,17 +16,13 @@ namespace SlacrafratMarketDiscordBot
         public DiscordClient? DClient { get; private set; }
         public HttpClient? HClient { get; private set; }
         public CommandsNextExtension? Commands { get; private set; }
+        public SlashCommandsExtension? SlashCommands { get; private set; }
 
-        public string[] artefacts_files { get; set; }
-        public string[] armors_files { get; set; }
-        public string[] weapons_files { get; set; }
-
+        public List<Item> items_list { get; set; }
 
         public async Task RunAsync()
         {
-            artefacts_files = Directory.GetFiles("","*.json");
-            armors_files = Directory.GetFiles("", "*.json");
-            weapons_files = Directory.GetFiles("", "*.json");
+            items_list = JsonConvert.DeserializeObject<List<Item>>(Properties.Resources.listing);
             var configJson = JsonConvert.DeserializeObject<Configuration>(Properties.Resources.config);
 
             var config = new DiscordConfiguration
@@ -52,6 +51,14 @@ namespace SlacrafratMarketDiscordBot
             Commands = DClient.UseCommandsNext(commandsConfig);
 
             Commands.RegisterCommands<Market>();
+
+            var slashcommandsConfig = new SlashCommandsConfiguration
+            {
+            };
+
+            SlashCommands = DClient.UseSlashCommands(slashcommandsConfig);
+
+            SlashCommands.RegisterCommands<MarketSlash>();
 
             await DClient.ConnectAsync();
 

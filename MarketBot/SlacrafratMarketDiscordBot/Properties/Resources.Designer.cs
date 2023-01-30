@@ -62,7 +62,7 @@ namespace SlacrafratMarketDiscordBot.Properties {
         
         /// <summary>
         ///   Ищет локализованную строку, похожую на {
-        ///  &quot;token&quot;: &quot;MTA2NzgyNTU3NDU3NzQ1OTI0MA.GSK3VJ.CAK59v8EjdKeukmK2WFZpQ45eO2O-QdJEe5GoE&quot;,
+        ///  &quot;token&quot;: &quot;MTA2NzgyNTU3NDU3NzQ1OTI0MA.G5yp7V.qRuWAcZSS2eoTycPX1avRaDMBvUs2rZ8xKCP7A&quot;,
         ///  &quot;prefix&quot;: &quot;?&quot;
         ///}
         ///.
@@ -70,6 +70,34 @@ namespace SlacrafratMarketDiscordBot.Properties {
         internal static string config {
             get {
                 return ResourceManager.GetString("config", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на [
+        ///  {
+        ///    &quot;data&quot;: &quot;/items/weapon/device/B17n.json&quot;,
+        ///    &quot;icon&quot;: &quot;/icons/weapon/device/B17n.png&quot;,
+        ///    &quot;name&quot;: {
+        ///      &quot;type&quot;: &quot;translation&quot;,
+        ///      &quot;key&quot;: &quot;item.device.dud_svecha.name&quot;,
+        ///      &quot;args&quot;: {},
+        ///      &quot;lines&quot;: {
+        ///        &quot;ru&quot;: &quot;Детектор узкого диапазона «Свеча»&quot;,
+        ///        &quot;en&quot;: &quot;Candle Short Range Detector&quot;
+        ///      }
+        ///    }
+        ///  },
+        ///  {
+        ///    &quot;data&quot;: &quot;/items/weapon/device/yZ08.json&quot;,
+        ///    &quot;icon&quot;: &quot;/icons/weapon/device/yZ08.png&quot;,
+        ///    &quot;name&quot;: {
+        ///      &quot;type&quot;: &quot;translation&quot;,
+        ///      &quot;key&quot;: &quot;item.dev [остаток строки не уместился]&quot;;.
+        /// </summary>
+        internal static string listing {
+            get {
+                return ResourceManager.GetString("listing", resourceCulture);
             }
         }
     }
