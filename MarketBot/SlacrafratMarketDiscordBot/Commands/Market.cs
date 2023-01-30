@@ -5,10 +5,13 @@ using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
 using Newtonsoft.Json;
 using SlacrafratMarketDiscordBot.Objects;
-using System.Drawing;
+using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.IO.Enumeration;
 using System.Text;
+using System.Text.RegularExpressions;
+using static System.Net.WebRequestMethods;
 
 namespace SlacrafratMarketDiscordBot.Commands
 {
@@ -29,6 +32,7 @@ namespace SlacrafratMarketDiscordBot.Commands
 
     public class MarketSlash : ApplicationCommandModule
     {
+        public enum Servers{Russian, Europe};
 
         [SlashCommand("ping", "Test")]
         public async Task Ping(InteractionContext ctx)
@@ -36,25 +40,37 @@ namespace SlacrafratMarketDiscordBot.Commands
             ctx.Channel.SendMessageAsync("Pong").ConfigureAwait(false);
         }
         [SlashCommand("search", "Поиск предметов")]
-        public async Task Search(InteractionContext ctx, [Option("Имя", "Название предмета")] string item)
+        public async Task Search(InteractionContext ctx, [Option("Имя", "Название предмета")] string item, [Option("Сервер", "Выберите сервер")] Servers server)
         {
-            var ItemList = JsonConvert.DeserializeObject<List<Item>>(Properties.Resources.listing);
+            var pathListing = Directory.GetCurrentDirectory() + GetPath(server) + "/listing.json";
+            pathListing = pathListing.Replace("\\", "/");
+            var ItemList = new List<Item>();
+            using (StreamReader sr = new StreamReader(pathListing))
+            {
+                ItemList = JsonConvert.DeserializeObject<List<Item>>(sr.ReadToEnd());
+            }
+
             foreach (Item i in ItemList)
             {
                 if (i.name.Lines.Ru.Contains(item))
                 {
-                    var path = Directory.GetCurrentDirectory().ToString().Replace("\\", "/") + "/stalcraftdatabase/global" + i.icon;
-                    var pathData = Directory.GetCurrentDirectory().ToString().Replace("\\", "/") + "/stalcraftdatabase/global" + i.data;
+                    var path = Directory.GetCurrentDirectory().ToString().Replace("\\", "/") + GetPath(server) + i.icon;
+                    var pathData = Directory.GetCurrentDirectory().ToString().Replace("\\", "/") + GetPath(server) + i.data;
                     var filename = Path.GetFileName(path);
                     var objectData = new ItemInfo();
                     path = path.Replace("/", @"\");
-                    pathData = pathData.Replace("/", @"\");
-
-                    using (StreamReader sr = new StreamReader(pathData))
+                    pathData = pathData.Replace("/", @"\");
+
+
+
+                    using (StreamReader sr = new StreamReader(pathData))
+
                     {
                         objectData = JsonConvert.DeserializeObject<ItemInfo>(sr.ReadToEnd(), ItemInfo.Converter.Settings);
-                    }
-
+                    }
+
+
+
                     using (FileStream fs = new FileStream(path, FileMode.Open))
                     {
                         var message = new DiscordMessageBuilder()
@@ -68,27 +84,20 @@ namespace SlacrafratMarketDiscordBot.Commands
                         };
 
                         foreach(ItemInfo.InfoBlock e in objectData.InfoBlocks)
-                        {
-                            if(e.Text != null && e.Text.Key != null && e.Text.Key.Contains("description"))
-                            {
-                                embed.Description = e.Text.Lines.Ru;
-                            }
+                        {
+
+                            if(e.Text != null && e.Text.Key != null && e.Text.Key.Contains("description"))
+
+                            {
+
+                                embed.Description = e.Text.Lines.Ru;
+
+                            }
+
                         }
-                        switch(objectData.Color)
-                        {
-                            case "RANK_MASTER":
-                                embed.Color = DiscordColor.Red;
-                                break;
-                            case "RANK_VETERAN":
-                                embed.Color = DiscordColor.Purple;
-                                break;
-                            case "RANK_STALKER":
-                                embed.Color = DiscordColor.Azure;
-                                break;
-                            case "RANK_NEWBIE":
-                                embed.Color = DiscordColor.Green;
-                                break;
-                        }
+
+                        ChangeColorEmbed(objectData.Color, embed);
+                        embed.WithFooter("Данные предоставлены https://eapi.stalcraft.net/");
 
                         message.Embed = embed;
                         
@@ -97,8 +106,8 @@ namespace SlacrafratMarketDiscordBot.Commands
                 }
                 else if (i.name.Lines.En.Contains(item))
                 {
-                    var path = Directory.GetCurrentDirectory().ToString().Replace("\\", "/") + "/stalcraftdatabase/global" + i.icon;
-                    var pathData = Directory.GetCurrentDirectory().ToString().Replace("\\", "/") + "/stalcraftdatabase/global" + i.data;
+                    var path = Directory.GetCurrentDirectory().ToString().Replace("\\", "/") + GetPath(server) + i.icon;
+                    var pathData = Directory.GetCurrentDirectory().ToString().Replace("\\", "/") + GetPath(server) + i.data;
                     var filename = Path.GetFileName(path);
                     var objectData = new ItemInfo();
                     path = path.Replace("/", @"\");
@@ -119,31 +128,25 @@ namespace SlacrafratMarketDiscordBot.Commands
                             Title = i.name.Lines.En,
                             Description = "",
                             ImageUrl = "attachment://" + filename,
-                        };
-
+                        };
+
+
+
                         foreach (ItemInfo.InfoBlock e in objectData.InfoBlocks)
-                        {
-                            if (e.Text != null && e.Text.Key != null && e.Text.Key.Contains("description"))
-                            {
-                                embed.Description = e.Text.Lines.En;
-                            }
-                        }
-
-                        switch (objectData.Color)
-                        {
-                            case "RANK_MASTER":
-                                embed.Color = DiscordColor.Red;
-                                break;
-                            case "RANK_VETERAN":
-                                embed.Color = DiscordColor.Purple;
-                                break;
-                            case "RANK_STALKER":
-                                embed.Color = DiscordColor.Azure;
-                                break;
-                            case "RANK_NEWBIE":
-                                embed.Color = DiscordColor.Green;
-                                break;
+                        {
+
+                            if (e.Text != null && e.Text.Key != null && e.Text.Key.Contains("description"))
+
+                            {
+
+                                embed.Description = e.Text.Lines.En;
+
+                            }
+
                         }
+
+                        ChangeColorEmbed(objectData.Color, embed);
+                        embed.WithFooter("Data provided by https://eapi.stalcraft.net/");
 
                         message.Embed = embed;
 
@@ -154,30 +157,256 @@ namespace SlacrafratMarketDiscordBot.Commands
         }
 
         [SlashCommand("price", "Поиск цен по предмету")]
-        public async Task Price(InteractionContext ctx, [Option("Имя", "Название премдета")] string item)
-        {
-            var ItemList = JsonConvert.DeserializeObject<List<Item>>(Properties.Resources.listing);
+        public async Task Price(InteractionContext ctx, [Option("Имя", "Название премдета")] string item, [Option("Сервер", "Выберите сервер")] Servers server)
+        {
+            var pathListing = Directory.GetCurrentDirectory() + GetPath(server) + "/listing.json";
+            pathListing = pathListing.Replace("\\", "/");
+            var ItemList = new List<Item>();
+            using (StreamReader sr = new StreamReader(pathListing))
+            {
+                ItemList = JsonConvert.DeserializeObject<List<Item>>(sr.ReadToEnd());
+            }
+
             foreach (Item i in ItemList)
             {
                 if (i.name.Lines.Ru.Contains(item))
-                {
-                    var name = Path.GetFileNameWithoutExtension(i.icon);
-                    using (var httpClient = new HttpClient())
-                    {
-                        using (var request = new HttpRequestMessage(new HttpMethod("GET"), "https://eapi.stalcraft.net/eu/clans"))
-                        {
-                            var configObj = JsonConvert.DeserializeObject<Configuration>(Properties.Resources.config);
-                            request.Headers.TryAddWithoutValidation("Client-Id", configObj.ClientId);
-                            request.Headers.TryAddWithoutValidation("Client-Secret", configObj.ClientSecret);
-
-                            var response = await httpClient.SendAsync(request);
-                        }
-                    }
+                {
+
+                    var name = Path.GetFileNameWithoutExtension(i.icon);
+
+                    using (var httpClient = new HttpClient())
+
+                    {
+
+                        using (var request = new HttpRequestMessage(new HttpMethod("GET"), GetHTTP(server) + name + "/history"))
+
+                        {
+
+                            var configObj = JsonConvert.DeserializeObject<Configuration>(Properties.Resources.config);
+
+                            request.Headers.TryAddWithoutValidation("Client-Id", configObj.ClientId);
+
+                            request.Headers.TryAddWithoutValidation("Client-Secret", configObj.ClientSecret);
+
+
+
+                            var response = await httpClient.SendAsync(request);
+                            var responseString = await response.Content.ReadAsStringAsync();
+                            var objectResponse = JsonConvert.DeserializeObject<ItemPrice>(responseString);
+
+                            var path = Directory.GetCurrentDirectory().ToString().Replace("\\", "/") + GetPath(server) + i.icon;
+                            var pathData = Directory.GetCurrentDirectory().ToString().Replace("\\", "/") + GetPath(server) + i.data;
+                            var filename = Path.GetFileName(path);
+                            var objectData = new ItemInfo();
+                            path = path.Replace("/", @"\");
+                            pathData = pathData.Replace("/", @"\");
+
+                            var minPrice = long.MaxValue;
+                            var maxPrice = long.MinValue;
+
+                            foreach (ItemPrice.Price p in objectResponse.Prices)
+                            {
+                                if (minPrice > (long)(p.PricePrice / p.Amount))
+                                {
+                                    minPrice = (long)p.PricePrice / p.Amount;
+                                }
+                                if (maxPrice < (long)(p.PricePrice / p.Amount))
+                                {
+                                    maxPrice = (long)p.PricePrice / p.Amount;
+                                }
+                            }
+
+                            using (FileStream fs = new FileStream(path, FileMode.Open))
+                            {
+                                var message = new DiscordMessageBuilder()
+                                .AddFile(filename, fs);
+
+                                DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+                                {
+                                    Title = i.name.Lines.Ru,
+                                    Description = "",
+                                };
+                                string maxP = "None";
+                                string mP = "None";
+                                var culture = new CultureInfo("ru-RU")
+                                {
+                                    NumberFormat =
+                                    {
+                                        NumberGroupSeparator = ".",
+                                    },
+                                };
+                                if (minPrice != long.MaxValue)
+                                {
+                                    mP = minPrice.ToString("#,#", culture);
+                                }
+                                if (maxPrice != long.MinValue)
+                                {
+                                    maxP = maxPrice.ToString("#,#", culture);
+                                }
+                                embed.WithThumbnail("attachment://" + filename);
+                                embed.AddField("Цена", mP, true);
+                                embed.AddField("Максимальная цена", maxP, true);
+                                embed.AddField("Разница %", "Wip", true);
+                                embed.WithFooter("Данные предоставлены https://eapi.stalcraft.net/");
+
+                                ChangeColorEmbed(objectData.Color, embed);
+
+                                message.Embed = embed;
+
+                                await ctx.Channel.SendMessageAsync(message);
+                            }
+                        }
+
+                    }
+
                 }
                 else if (i.name.Lines.En.Contains(item))
-                {
-                    var name = Path.GetFileNameWithoutExtension(i.icon);
+                {
+
+                    var name = Path.GetFileNameWithoutExtension(i.icon);
+
+                    using (var httpClient = new HttpClient())
+                    {
+                        using (var request = new HttpRequestMessage(new HttpMethod("GET"), GetHTTP(server) + name + "/history"))
+
+                        {
+
+                            var configObj = JsonConvert.DeserializeObject<Configuration>(Properties.Resources.config);
+
+                            request.Headers.TryAddWithoutValidation("Client-Id", configObj.ClientId);
+
+                            request.Headers.TryAddWithoutValidation("Client-Secret", configObj.ClientSecret);
+
+
+
+                            var response = await httpClient.SendAsync(request);
+                            var responseString = await response.Content.ReadAsStringAsync();
+                            var objectResponse = JsonConvert.DeserializeObject<ItemPrice>(responseString);
+
+                            var path = Directory.GetCurrentDirectory().ToString().Replace("\\", "/") + GetPath(server) + i.icon;
+                            var pathData = Directory.GetCurrentDirectory().ToString().Replace("\\", "/") + GetPath(server) + i.data;
+                            var filename = Path.GetFileName(path);
+                            var objectData = new ItemInfo();
+                            path = path.Replace("/", @"\");
+                            pathData = pathData.Replace("/", @"\");
+
+                            var minPrice = long.MaxValue;
+                            var maxPrice = long.MinValue;
+
+                            foreach (ItemPrice.Price p in objectResponse.Prices)
+                            {
+                                if (minPrice > (long)(p.PricePrice / p.Amount))
+                                {
+                                    minPrice = (long)p.PricePrice / p.Amount;
+                                }
+                                if (maxPrice < (long)(p.PricePrice / p.Amount))
+                                {
+                                    maxPrice = (long)p.PricePrice / p.Amount;
+                                }
+                            }
+
+                            using (FileStream fs = new FileStream(path, FileMode.Open))
+                            {
+                                var message = new DiscordMessageBuilder()
+                                .AddFile(filename, fs);
+
+                                DiscordEmbedBuilder embed = new DiscordEmbedBuilder
+                                {
+                                    Title = i.name.Lines.Ru,
+                                    Description = "",
+                                };
+                                string maxP = "None";
+                                string mP = "None";
+                                var culture = new CultureInfo("ru-RU")
+                                {
+                                    NumberFormat =
+                                    {
+                                        NumberGroupSeparator = ".",
+                                    },
+                                };
+                                if (minPrice != long.MaxValue)
+                                {
+                                    mP = minPrice.ToString("#,#", culture);
+                                }
+                                if (maxPrice != long.MinValue)
+                                {
+                                    maxP = maxPrice.ToString("#,#", culture);
+                                }
+                                embed.WithThumbnail("attachment://" + filename);
+                                embed.AddField("Price", mP, true);
+                                embed.AddField("Max Price", maxP, true);
+                                embed.AddField("Price Difference", "Wip", true);
+                                embed.WithFooter("Data provided by https://eapi.stalcraft.net/");
+
+                                ChangeColorEmbed(objectData.Color, embed);
+
+                                message.Embed = embed;
+
+                                await ctx.Channel.SendMessageAsync(message);
+                            }
+                        }
+                    }
                 }
+            }
+        }
+
+        public string GetPath(Servers server)
+        {
+            var url = string.Empty;
+            switch (server)
+            {
+                case Servers.Europe:
+                    url = "/stalcraftdatabase/global";
+                    break;
+                case Servers.Russian:
+                    url = "/stalcraftdatabase/ru";
+                    break;
+            }
+            return url;
+        }
+        public string GetHTTP(Servers server)
+        {
+            var url = string.Empty;
+            switch (server)
+            {
+                case Servers.Europe:
+                    url = "https://eapi.stalcraft.net/eu/auction/";
+                    break;
+                case Servers.Russian:
+                    url =  "https://eapi.stalcraft.net/ru/auction/";
+                    break;
+            }
+            return url;
+        }
+        public void ChangeColorEmbed(string level, DiscordEmbedBuilder embed)
+        {
+            switch (level)
+            {
+
+                case "RANK_MASTER":
+
+                    embed.Color = DiscordColor.Red;
+
+                    break;
+
+                case "RANK_VETERAN":
+
+                    embed.Color = DiscordColor.Purple;
+
+                    break;
+
+                case "RANK_STALKER":
+
+                    embed.Color = DiscordColor.Azure;
+
+                    break;
+
+                case "RANK_NEWBIE":
+
+                    embed.Color = DiscordColor.Green;
+
+                    break;
+
             }
         }
     }
