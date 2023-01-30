@@ -5,9 +5,10 @@ using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.Attributes;
 using Newtonsoft.Json;
 using SlacrafratMarketDiscordBot.Objects;
-using System.Drawing;
+using System.Drawing;
 using System.IO;
 using System.IO.Enumeration;
+using System.Text;
 
 namespace SlacrafratMarketDiscordBot.Commands
 {
@@ -47,13 +48,13 @@ namespace SlacrafratMarketDiscordBot.Commands
                     var filename = Path.GetFileName(path);
                     var objectData = new ItemInfo();
                     path = path.Replace("/", @"\");
-                    pathData = pathData.Replace("/", @"\");
-
-                    using (StreamReader sr = new StreamReader(pathData))
+                    pathData = pathData.Replace("/", @"\");
+
+                    using (StreamReader sr = new StreamReader(pathData))
                     {
                         objectData = JsonConvert.DeserializeObject<ItemInfo>(sr.ReadToEnd(), ItemInfo.Converter.Settings);
-                    }
-
+                    }
+
                     using (FileStream fs = new FileStream(path, FileMode.Open))
                     {
                         var message = new DiscordMessageBuilder()
@@ -67,26 +68,26 @@ namespace SlacrafratMarketDiscordBot.Commands
                         };
 
                         foreach(ItemInfo.InfoBlock e in objectData.InfoBlocks)
-                        {
-                            if(e.Text != null && e.Text.Key != null && e.Text.Key.Contains("description"))
-                            {
-                                embed.Description = e.Text.Lines.Ru;
-                            }
+                        {
+                            if(e.Text != null && e.Text.Key != null && e.Text.Key.Contains("description"))
+                            {
+                                embed.Description = e.Text.Lines.Ru;
+                            }
                         }
-                        switch(objectData.Color)
-                        {
-                            case "RANK_MASTER":
-                                embed.Color = DiscordColor.Red;
-                                break;
-                            case "RANK_VETERAN":
-                                embed.Color = DiscordColor.Purple;
-                                break;
-                            case "RANK_STALKER":
-                                embed.Color = DiscordColor.Azure;
-                                break;
-                            case "RANK_NEWBIE":
-                                embed.Color = DiscordColor.Green;
-                                break;
+                        switch(objectData.Color)
+                        {
+                            case "RANK_MASTER":
+                                embed.Color = DiscordColor.Red;
+                                break;
+                            case "RANK_VETERAN":
+                                embed.Color = DiscordColor.Purple;
+                                break;
+                            case "RANK_STALKER":
+                                embed.Color = DiscordColor.Azure;
+                                break;
+                            case "RANK_NEWBIE":
+                                embed.Color = DiscordColor.Green;
+                                break;
                         }
 
                         message.Embed = embed;
@@ -118,30 +119,30 @@ namespace SlacrafratMarketDiscordBot.Commands
                             Title = i.name.Lines.En,
                             Description = "",
                             ImageUrl = "attachment://" + filename,
-                        };
-
+                        };
+
                         foreach (ItemInfo.InfoBlock e in objectData.InfoBlocks)
-                        {
-                            if (e.Text != null && e.Text.Key != null && e.Text.Key.Contains("description"))
-                            {
-                                embed.Description = e.Text.Lines.En;
-                            }
-                        }
-
-                        switch (objectData.Color)
-                        {
-                            case "RANK_MASTER":
-                                embed.Color = DiscordColor.Red;
-                                break;
-                            case "RANK_VETERAN":
-                                embed.Color = DiscordColor.Purple;
-                                break;
-                            case "RANK_STALKER":
-                                embed.Color = DiscordColor.Azure;
-                                break;
-                            case "RANK_NEWBIE":
-                                embed.Color = DiscordColor.Green;
-                                break;
+                        {
+                            if (e.Text != null && e.Text.Key != null && e.Text.Key.Contains("description"))
+                            {
+                                embed.Description = e.Text.Lines.En;
+                            }
+                        }
+
+                        switch (objectData.Color)
+                        {
+                            case "RANK_MASTER":
+                                embed.Color = DiscordColor.Red;
+                                break;
+                            case "RANK_VETERAN":
+                                embed.Color = DiscordColor.Purple;
+                                break;
+                            case "RANK_STALKER":
+                                embed.Color = DiscordColor.Azure;
+                                break;
+                            case "RANK_NEWBIE":
+                                embed.Color = DiscordColor.Green;
+                                break;
                         }
 
                         message.Embed = embed;
@@ -154,28 +155,28 @@ namespace SlacrafratMarketDiscordBot.Commands
 
         [SlashCommand("price", "Поиск цен по предмету")]
         public async Task Price(InteractionContext ctx, [Option("Имя", "Название премдета")] string item)
-        {
-            var ItemList = JsonConvert.DeserializeObject<List<Item>>(Properties.Resources.listing);
+        {
+            var ItemList = JsonConvert.DeserializeObject<List<Item>>(Properties.Resources.listing);
             foreach (Item i in ItemList)
             {
                 if (i.name.Lines.Ru.Contains(item))
-                {
-                    var name = Path.GetFileNameWithoutExtension(i.icon);
-                    using (var httpClient = new HttpClient())
-                    {
-                        using (var request = new HttpRequestMessage(new HttpMethod("GET"), "https://eapi.stalcraft.net/eu/clans"))
-                        {
-                            var configObj = JsonConvert.DeserializeObject<Configuration>(Properties.Resources.config);
-                            request.Headers.TryAddWithoutValidation("Client-Id", configObj.ClientId);
-                            request.Headers.TryAddWithoutValidation("Client-Secret", configObj.ClientSecret);
-
-                            var response = await httpClient.SendAsync(request);
-                        }
-                    }
+                {
+                    var name = Path.GetFileNameWithoutExtension(i.icon);
+                    using (var httpClient = new HttpClient())
+                    {
+                        using (var request = new HttpRequestMessage(new HttpMethod("GET"), "https://eapi.stalcraft.net/eu/clans"))
+                        {
+                            var configObj = JsonConvert.DeserializeObject<Configuration>(Properties.Resources.config);
+                            request.Headers.TryAddWithoutValidation("Client-Id", configObj.ClientId);
+                            request.Headers.TryAddWithoutValidation("Client-Secret", configObj.ClientSecret);
+
+                            var response = await httpClient.SendAsync(request);
+                        }
+                    }
                 }
                 else if (i.name.Lines.En.Contains(item))
-                {
-                    var name = Path.GetFileNameWithoutExtension(i.icon);
+                {
+                    var name = Path.GetFileNameWithoutExtension(i.icon);
                 }
             }
         }
