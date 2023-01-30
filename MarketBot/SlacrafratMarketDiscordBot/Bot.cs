@@ -18,11 +18,8 @@ namespace SlacrafratMarketDiscordBot
         public CommandsNextExtension? Commands { get; private set; }
         public SlashCommandsExtension? SlashCommands { get; private set; }
 
-        public List<Item> items_list { get; set; }
-
         public async Task RunAsync()
         {
-            items_list = JsonConvert.DeserializeObject<List<Item>>(Properties.Resources.listing);
             var configJson = JsonConvert.DeserializeObject<Configuration>(Properties.Resources.config);
 
             var config = new DiscordConfiguration
