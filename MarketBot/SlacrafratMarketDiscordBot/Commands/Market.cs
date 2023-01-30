@@ -151,5 +151,33 @@ namespace SlacrafratMarketDiscordBot.Commands
                 }
             }
         }
+
+        [SlashCommand("price", "Поиск цен по предмету")]
+        public async Task Price(InteractionContext ctx, [Option("Имя", "Название премдета")] string item)
+        {
+            var ItemList = JsonConvert.DeserializeObject<List<Item>>(Properties.Resources.listing);
+            foreach (Item i in ItemList)
+            {
+                if (i.name.Lines.Ru.Contains(item))
+                {
+                    var name = Path.GetFileNameWithoutExtension(i.icon);
+                    using (var httpClient = new HttpClient())
+                    {
+                        using (var request = new HttpRequestMessage(new HttpMethod("GET"), "https://eapi.stalcraft.net/eu/clans"))
+                        {
+                            var configObj = JsonConvert.DeserializeObject<Configuration>(Properties.Resources.config);
+                            request.Headers.TryAddWithoutValidation("Client-Id", configObj.ClientId);
+                            request.Headers.TryAddWithoutValidation("Client-Secret", configObj.ClientSecret);
+
+                            var response = await httpClient.SendAsync(request);
+                        }
+                    }
+                }
+                else if (i.name.Lines.En.Contains(item))
+                {
+                    var name = Path.GetFileNameWithoutExtension(i.icon);
+                }
+            }
+        }
     }
 }
