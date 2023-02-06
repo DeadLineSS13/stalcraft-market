@@ -9,6 +9,7 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.IO.Enumeration;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using static System.Net.WebRequestMethods;
@@ -42,8 +43,7 @@ namespace SlacrafratMarketDiscordBot.Commands
         [SlashCommand("search", "Поиск предметов")]
         public async Task Search(InteractionContext ctx, [Option("Имя", "Название предмета")] string item, [Option("Сервер", "Выберите сервер")] Servers server)
         {
-            var pathListing = Directory.GetCurrentDirectory() + GetPath(server) + "/listing.json";
-            pathListing = pathListing.Replace("\\", "/");
+            var pathListing = GetPathFile("/listing.json", server);
             var ItemList = new List<Item>();
             using (StreamReader sr = new StreamReader(pathListing))
             {
@@ -54,12 +54,10 @@ namespace SlacrafratMarketDiscordBot.Commands
             {
                 if (i.name.Lines.Ru.Contains(item))
                 {
-                    var path = Directory.GetCurrentDirectory().ToString().Replace("\\", "/") + GetPath(server) + i.icon;
-                    var pathData = Directory.GetCurrentDirectory().ToString().Replace("\\", "/") + GetPath(server) + i.data;
+                    var path = GetPathFile(i.icon, server);
+                    var pathData = GetPathFile(i.data, server);
                     var filename = Path.GetFileName(path);
                     var objectData = new ItemInfo();
-                    path = path.Replace("/", @"\");
-                    pathData = pathData.Replace("/", @"\");
 
 
 
@@ -106,12 +104,10 @@ namespace SlacrafratMarketDiscordBot.Commands
                 }
                 else if (i.name.Lines.En.Contains(item))
                 {
-                    var path = Directory.GetCurrentDirectory().ToString().Replace("\\", "/") + GetPath(server) + i.icon;
-                    var pathData = Directory.GetCurrentDirectory().ToString().Replace("\\", "/") + GetPath(server) + i.data;
+                    var path = GetPathFile(i.icon, server);
+                    var pathData = GetPathFile(i.data, server);
                     var filename = Path.GetFileName(path);
                     var objectData = new ItemInfo();
-                    path = path.Replace("/", @"\");
-                    pathData = pathData.Replace("/", @"\");
 
                     using (StreamReader sr = new StreamReader(pathData)) 
                     {
@@ -159,8 +155,7 @@ namespace SlacrafratMarketDiscordBot.Commands
         [SlashCommand("price", "Поиск цен по предмету")]
         public async Task Price(InteractionContext ctx, [Option("Имя", "Название премдета")] string item, [Option("Сервер", "Выберите сервер")] Servers server)
         {
-            var pathListing = Directory.GetCurrentDirectory() + GetPath(server) + "/listing.json";
-            pathListing = pathListing.Replace("\\", "/");
+            var pathListing = GetPathFile("/listing.json", server);
             var ItemList = new List<Item>();
             using (StreamReader sr = new StreamReader(pathListing))
             {
@@ -194,12 +189,10 @@ namespace SlacrafratMarketDiscordBot.Commands
                             var responseString = await response.Content.ReadAsStringAsync();
                             var objectResponse = JsonConvert.DeserializeObject<ItemPrice>(responseString);
 
-                            var path = Directory.GetCurrentDirectory().ToString().Replace("\\", "/") + GetPath(server) + i.icon;
-                            var pathData = Directory.GetCurrentDirectory().ToString().Replace("\\", "/") + GetPath(server) + i.data;
+                            var path = GetPathFile(i.icon, server);
+                            var pathData = GetPathFile(i.data, server);
                             var filename = Path.GetFileName(path);
                             var objectData = new ItemInfo();
-                            path = path.Replace("/", @"\");
-                            pathData = pathData.Replace("/", @"\");
 
                             var minPrice = long.MaxValue;
                             var maxPrice = long.MinValue;
@@ -283,12 +276,10 @@ namespace SlacrafratMarketDiscordBot.Commands
                             var responseString = await response.Content.ReadAsStringAsync();
                             var objectResponse = JsonConvert.DeserializeObject<ItemPrice>(responseString);
 
-                            var path = Directory.GetCurrentDirectory().ToString().Replace("\\", "/") + GetPath(server) + i.icon;
-                            var pathData = Directory.GetCurrentDirectory().ToString().Replace("\\", "/") + GetPath(server) + i.data;
+                            var path = GetPathFile(i.icon, server);
+                            var pathData = GetPathFile(i.data, server);
                             var filename = Path.GetFileName(path);
                             var objectData = new ItemInfo();
-                            path = path.Replace("/", @"\");
-                            pathData = pathData.Replace("/", @"\");
 
                             var minPrice = long.MaxValue;
                             var maxPrice = long.MinValue;
@@ -349,17 +340,27 @@ namespace SlacrafratMarketDiscordBot.Commands
                 }
             }
         }
-
-        public string GetPath(Servers server)
+        
+        public string GetPathFile(string file, Servers server)
         {
-            var url = string.Empty;
+            if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                file = file.Replace("/", @"\");
+            }
+            var subpath = GetSubPath(server);
+            return Path.Combine(Environment.CurrentDirectory, subpath[0], subpath[1]) + file;
+        }
+        public List<string> GetSubPath(Servers server)
+        {
+            var url = new List<string>();
+            url.Add("stalcraftdatabase");
             switch (server)
             {
                 case Servers.Europe:
-                    url = "/stalcraftdatabase/global";
+                    url.Add("global");
                     break;
                 case Servers.Russian:
-                    url = "/stalcraftdatabase/ru";
+                    url.Add("ru");
                     break;
             }
             return url;
