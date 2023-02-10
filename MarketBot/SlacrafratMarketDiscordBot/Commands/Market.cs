@@ -386,7 +386,7 @@ namespace SlacrafratMarketDiscordBot.Commands
                 embed.AddField("Цена", mP, true);
                 embed.AddField("Максимальная цена", maxP, true);
                 embed.AddField("Разница %", "Wip", true);
-                embed.WithFooter("Данные предоставлены https://eapi.stalcraft.net/");
+                embed.WithFooter("Page " + number.ToString() + "/" + len.ToString() + "        " + "Данные предоставлены https://eapi.stalcraft.net/");
 
                 ChangeColorEmbed(objectData.Color, embed);
 
@@ -441,7 +441,7 @@ namespace SlacrafratMarketDiscordBot.Commands
                 embed.AddField("Цена", mP, true);
                 embed.AddField("Максимальная цена", maxP, true);
                 embed.AddField("Разница %", "Wip", true);
-                embed.WithFooter("Данные предоставлены https://eapi.stalcraft.net/");
+                embed.WithFooter("Page " + number.ToString() + "/" + len.ToString() + "        " + "Данные предоставлены https://eapi.stalcraft.net/");
 
                 ChangeColorEmbed(objectData.Color, embed);
 
