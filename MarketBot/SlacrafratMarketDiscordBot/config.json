@@ -1,6 +1,6 @@
 {
-  "token": "MTA2NzgyNTU3NDU3NzQ1OTI0MA.GJFxf-.a_WeE7cFAM3TuZmnfWKHSyJyM84voCYkCc0R-k",
+  "token": "TOKEN",
   "prefix": "?",
-  "client_id": "112",
-  "client_secret": "pdzSByAGp0qeuFhubfudSLqrHXshXBLIbtxsAHdC"
+  "client_id": "CLIENT_ID",
+  "client_secret": "CLIENT_SECRET"
 }
