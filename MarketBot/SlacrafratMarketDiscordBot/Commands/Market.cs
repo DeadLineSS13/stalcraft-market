@@ -357,7 +357,7 @@ namespace SlacrafratMarketDiscordBot.Commands
             switch (server)
             {
                 case Servers.Europe:
-                    url.Add("global");
+                    url.Add("ru");
                     break;
                 case Servers.Russian:
                     url.Add("ru");
