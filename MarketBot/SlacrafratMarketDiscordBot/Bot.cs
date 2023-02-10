@@ -8,6 +8,9 @@ using System.Net.Http;
 using SlacrafratMarketDiscordBot.Objects;
 using System.Reflection;
 using DSharpPlus.SlashCommands;
+using DSharpPlus.Interactivity.Enums;
+using DSharpPlus.Interactivity;
+using DSharpPlus.Interactivity.Extensions;
 
 namespace SlacrafratMarketDiscordBot
 {
@@ -47,8 +50,6 @@ namespace SlacrafratMarketDiscordBot
 
             Commands = DClient.UseCommandsNext(commandsConfig);
 
-            Commands.RegisterCommands<Market>();
-
             var slashcommandsConfig = new SlashCommandsConfiguration
             {
             };
@@ -56,6 +57,14 @@ namespace SlacrafratMarketDiscordBot
             SlashCommands = DClient.UseSlashCommands(slashcommandsConfig);
 
             SlashCommands.RegisterCommands<MarketSlash>();
+
+            var interactivityConfig = new InteractivityConfiguration()
+            {
+                PollBehaviour = PollBehaviour.KeepEmojis,
+                Timeout = TimeSpan.FromMinutes(1)
+            };
+
+            DClient.UseInteractivity(interactivityConfig);
 
             await DClient.ConnectAsync();
 
